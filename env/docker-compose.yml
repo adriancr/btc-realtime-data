@@ -1,0 +1,47 @@
+#https://www.digitalocean.com/community/tutorials/how-to-set-up-flask-with-mongodb-and-docker
+version: '3'
+services:
+
+  binancestream:
+    build:
+      context: binancestream
+      dockerfile: Dockerfile
+    # image: python:3.8-slim
+    container_name: brd_binancestream
+    restart: unless-stopped
+    # command: pip3 install -r /var/www/requirements.txt && python3 /var/www/bin_stream_poc
+    environment:
+      APP_ENV: "local"
+      APP_DEBUG: "True"
+      MONGODB_DATABASE: btc_db
+      MONGODB_USERNAME: satonaka
+      MONGODB_PASSWORD: mosatsmosats
+      MONGODB_HOSTNAME: mongodb
+    volumes:
+      - ../binance-stream-receiver:/var/www
+    depends_on:
+      - mongodb
+    networks:
+      - backend
+
+  mongodb:
+    image: mongo:4.0.8
+    container_name: brd_mongodb
+    restart: unless-stopped
+    command: mongod --auth
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: snakamoto
+      MONGO_INITDB_ROOT_PASSWORD: gimmemorecoins
+      MONGO_INITDB_DATABASE: btc_db
+      MONGODB_DATA_DIR: /data/db
+      MONDODB_LOG_DIR: /dev/null
+    ports:
+      - "27017:27017"
+    volumes:
+      - ../mongodbdata:/data/db
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
