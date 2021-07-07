@@ -2,12 +2,12 @@
 version: '3'
 services:
 
-  binancestream:
+  binancestream_receiver:
     build:
-      context: binancestream
+      context: binancestream_receiver
       dockerfile: Dockerfile
     # image: python:3.8-slim
-    container_name: brd_binancestream
+    container_name: brd_binancestream_receiver
     restart: unless-stopped
     # command: pip3 install -r /var/www/requirements.txt && python3 /var/www/bin_stream_poc
     environment:
@@ -23,6 +23,29 @@ services:
       - mongodb
     networks:
       - backend
+
+  binancestream_server:
+    build:
+      context: binancestream_server
+      dockerfile: Dockerfile
+    container_name: brd_binancestream_server
+    restart: unless-stopped
+    environment:
+      APP_ENV: "local"
+      APP_DEBUG: "True"
+      MONGODB_DATABASE: btc_db
+      MONGODB_USERNAME: satonaka
+      MONGODB_PASSWORD: mosatsmosats
+      MONGODB_HOSTNAME: mongodb
+    volumes:
+      - ../binance-stream-server:/var/www
+    depends_on:
+      - mongodb
+      # - binancestream_receiver
+    networks:
+      - backend
+    ports:
+      - "3549:3549"
 
   mongodb:
     image: mongo:4.0.8
